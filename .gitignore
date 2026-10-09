@@ -1,0 +1,24 @@
+# Binaries and build artifacts
+bin/
+dist/
+*.exe
+*.out
+*.test
+
+# Go workspace caches
+.coverprofile
+
+# Runtime data
+*.db
+*.db-journal
+*.log
+data/
+
+# Environment files
+.env
+.env.*
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
