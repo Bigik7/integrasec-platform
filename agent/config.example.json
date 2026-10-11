@@ -1,0 +1,9 @@
+{
+  "machine_id": "machine-linux-01",
+  "paths": ["/etc"],
+  "baseline_path": "./data/baseline.json",
+  "backend_url": "http://localhost:8080",
+  "agent_key_env": "INTEGRASEC_AGENT_KEY",
+  "watch_interval_seconds": 30,
+  "output": "text"
+}

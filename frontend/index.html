@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IntegraSec MVP</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; background: #0f172a; color: #e2e8f0; }
+    h1, h2 { margin-bottom: 0.5rem; }
+    .card { background: #1e293b; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    input, button { padding: 0.5rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; }
+    button { cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
+    th, td { border-bottom: 1px solid #334155; text-align: left; padding: 0.5rem; font-size: 0.92rem; }
+    .ok { color: #22c55e; }
+    .error { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <h1>IntegraSec - Tableau de bord MVP</h1>
+
+  <div class="card">
+    <label for="agentKey">Clé agent (header X-Agent-Key) :</label>
+    <input id="agentKey" type="password" placeholder="clé agent" />
+    <button id="refreshBtn">Rafraîchir</button>
+  </div>
+
+  <div class="card">
+    <h2>État API</h2>
+    <div id="health">Chargement…</div>
+  </div>
+
+  <div class="card">
+    <h2>Machines connues</h2>
+    <div id="machines"></div>
+  </div>
+
+  <div class="card">
+    <h2>Événements récents</h2>
+    <div id="events"></div>
+  </div>
+
+  <script>
+    async function fetchJSON(url, agentKey) {
+      const res = await fetch(url, {
+        headers: agentKey ? { 'X-Agent-Key': agentKey } : {}
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `Erreur ${res.status}`);
+      }
+      return data;
+    }
+
+    async function refresh() {
+      const agentKey = document.getElementById('agentKey').value;
+      const healthEl = document.getElementById('health');
+      const machinesEl = document.getElementById('machines');
+      const eventsEl = document.getElementById('events');
+
+      try {
+        const health = await fetchJSON('/health');
+        healthEl.innerHTML = `<span class="ok">${health.status}</span> - ${health.timestamp_utc}`;
+      } catch (err) {
+        healthEl.innerHTML = `<span class="error">${err.message}</span>`;
+      }
+
+      if (!agentKey) {
+        machinesEl.innerHTML = '<span class="error">Renseignez une clé agent pour charger les données.</span>';
+        eventsEl.textContent = '';
+        return;
+      }
+
+      try {
+        const machines = await fetchJSON('/api/v1/machines', agentKey);
+        machinesEl.innerHTML = renderMachines(machines);
+      } catch (err) {
+        machinesEl.innerHTML = `<span class="error">${err.message}</span>`;
+      }
+
+      try {
+        const events = await fetchJSON('/api/v1/events?limit=20', agentKey);
+        eventsEl.innerHTML = renderEvents(events);
+      } catch (err) {
+        eventsEl.innerHTML = `<span class="error">${err.message}</span>`;
+      }
+    }
+
+    function renderMachines(machines) {
+      if (!machines.length) return 'Aucune machine.';
+      const rows = machines.map(m => `<tr><td>${m.id}</td><td>${m.hostname}</td><td>${m.registered_utc}</td></tr>`).join('');
+      return `<table><thead><tr><th>ID</th><th>Hostname</th><th>Enregistrée (UTC)</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    function renderEvents(events) {
+      if (!events.length) return 'Aucun événement.';
+      const rows = events.map(e => `<tr><td>${e.timestamp_utc}</td><td>${e.machine}</td><td>${e.type}</td><td>${e.path}</td><td>${e.severity}</td></tr>`).join('');
+      return `<table><thead><tr><th>Timestamp UTC</th><th>Machine</th><th>Type</th><th>Path</th><th>Sévérité</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', refresh);
+    refresh();
+  </script>
+</body>
+</html>
