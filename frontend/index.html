@@ -3,103 +3,1357 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IntegraSec MVP</title>
+  <title>IntegraSec Console</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; background: #0f172a; color: #e2e8f0; }
-    h1, h2 { margin-bottom: 0.5rem; }
-    .card { background: #1e293b; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
-    input, button { padding: 0.5rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; }
+    :root {
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --text: #0f2540;
+      --muted: #6d7d90;
+      --accent: #127f88;
+      --accent-soft: #e4f4f5;
+      --border: #dbe5ef;
+      --danger: #c23131;
+      --ok: #1f8f5f;
+      --warning: #ab7a11;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 248px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .brand { font-size: 1.15rem; font-weight: 650; letter-spacing: 0.01em; }
+    .brand small { display: block; color: var(--muted); font-size: 0.8rem; margin-top: 0.2rem; }
+
+    .nav { display: flex; flex-direction: column; gap: 0.35rem; }
+
+    .nav button {
+      border: 0;
+      background: transparent;
+      text-align: left;
+      padding: 0.65rem 0.7rem;
+      border-radius: 0.5rem;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.92rem;
+    }
+
+    .nav button.active,
+    .nav button:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .sidebar-note {
+      margin-top: auto;
+      border: 1px solid var(--border);
+      border-radius: 0.65rem;
+      padding: 0.8rem;
+      background: #fafcfe;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    .content {
+      padding: 1rem 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .topbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.8rem;
+      padding: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem;
+      justify-content: space-between;
+    }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      min-width: 230px;
+      flex: 1;
+    }
+
+    input, select, button, textarea {
+      border: 1px solid var(--border);
+      border-radius: 0.55rem;
+      padding: 0.5rem 0.62rem;
+      font: inherit;
+      color: inherit;
+      background: #fff;
+    }
+
     button { cursor: pointer; }
-    table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
-    th, td { border-bottom: 1px solid #334155; text-align: left; padding: 0.5rem; font-size: 0.92rem; }
-    .ok { color: #22c55e; }
-    .error { color: #ef4444; }
+
+    .ghost { background: #fff; color: var(--text); }
+    .primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.24rem 0.56rem;
+      background: #fff;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--warning);
+    }
+
+    .dot.ok { background: var(--ok); }
+    .dot.error { background: var(--danger); }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.7rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.9rem;
+    }
+
+    .kpi-value { font-size: 1.3rem; font-weight: 650; margin-top: 0.2rem; }
+    .kpi-label { font-size: 0.8rem; color: var(--muted); }
+
+    .grid-two {
+      margin-top: 0.7rem;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      gap: 0.7rem;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: 84px 1fr 48px;
+      gap: 0.4rem;
+      align-items: center;
+      margin: 0.4rem 0;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .chart-track {
+      background: #edf2f7;
+      border-radius: 999px;
+      overflow: hidden;
+      height: 10px;
+    }
+
+    .chart-bar {
+      height: 100%;
+      background: var(--accent);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      padding: 0.55rem 0.4rem;
+      vertical-align: top;
+    }
+
+    th { color: var(--muted); font-weight: 550; }
+
+    .status-badge {
+      font-size: 0.74rem;
+      padding: 0.2rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+    }
+
+    .status-ok { color: var(--ok); border-color: #bfe4d3; background: #eefbf4; }
+    .status-mid { color: var(--warning); border-color: #f0dfbe; background: #fff7ea; }
+    .status-bad { color: var(--danger); border-color: #f4caca; background: #fff1f1; }
+
+    .panel {
+      margin-top: 0.7rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.85rem;
+    }
+
+    .muted { color: var(--muted); }
+    .error { color: var(--danger); }
+
+    .section-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 620;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin: 0.6rem 0;
+      align-items: center;
+    }
+
+    .split {
+      display: grid;
+      gap: 0.7rem;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+
+    .detail-list {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .detail-list dt {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 520;
+    }
+
+    .detail-list dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .wizard-steps {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+
+    .step {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.24rem 0.58rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: #fff;
+    }
+
+    .step.active {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .step-body { display: none; }
+    .step-body.active { display: block; }
+
+    textarea { width: 100%; min-height: 120px; resize: vertical; }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #f8fbff;
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 0.6rem;
+      font-size: 0.8rem;
+    }
+
+    .coming-soon {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    @media (max-width: 1120px) {
+      .grid-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .split, .grid-two { grid-template-columns: 1fr; }
+      .layout { grid-template-columns: 92px 1fr; }
+      .sidebar .label { display: none; }
+      .brand small { display: none; }
+      .sidebar-note { display: none; }
+      .nav button { text-align: center; padding: 0.6rem 0.3rem; font-size: 0.8rem; }
+    }
+
+    @media (max-width: 740px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .nav { flex-direction: row; flex-wrap: wrap; }
+      .nav button { text-align: left; }
+      .grid-cards { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <h1>IntegraSec - Tableau de bord MVP</h1>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">IntegraSec<small>Console d’intégrité</small></div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-note">
+        MVP local : pas de TLS/mTLS/eBPF/HMAC côté assistant. Utiliser uniquement en environnement de test local.
+      </div>
+    </aside>
 
-  <div class="card">
-    <label for="agentKey">Clé agent (header X-Agent-Key) :</label>
-    <input id="agentKey" type="password" placeholder="clé agent" />
-    <button id="refreshBtn">Rafraîchir</button>
-  </div>
+    <main class="content">
+      <header class="topbar">
+        <div class="search">
+          <input id="globalSearch" type="search" placeholder="Recherche machine, chemin, hash…" aria-label="Recherche globale">
+          <button id="applySearch" class="ghost">Filtrer</button>
+        </div>
+        <div class="topbar-right">
+          <label class="pill" title="URL API cible">
+            API
+            <input id="apiBase" style="width: 180px; border: 0; padding: 0;" placeholder="http://localhost:8080">
+          </label>
+          <label class="pill" title="Clé agent pour X-Agent-Key">
+            Agent
+            <input id="agentKeyInput" type="password" style="width: 150px; border: 0; padding: 0;" placeholder="X-Agent-Key">
+          </label>
+          <label class="pill" title="Clé bootstrap pour l'enrôlement">
+            Bootstrap
+            <input id="bootstrapKeyInput" type="password" style="width: 150px; border: 0; padding: 0;" placeholder="X-Bootstrap-Key">
+          </label>
+          <span class="pill"><span id="apiDot" class="dot"></span><span id="apiHealthText">API inconnue</span></span>
+          <span class="pill"><span class="dot ok"></span>Cluster local</span>
+          <span class="pill">Notif <strong id="notifCount">0</strong></span>
+          <button id="refreshData" class="ghost">Rafraîchir</button>
+          <button id="toDeploy" class="primary">Déployer un agent</button>
+        </div>
+      </header>
 
-  <div class="card">
-    <h2>État API</h2>
-    <div id="health">Chargement…</div>
-  </div>
-
-  <div class="card">
-    <h2>Machines connues</h2>
-    <div id="machines"></div>
-  </div>
-
-  <div class="card">
-    <h2>Événements récents</h2>
-    <div id="events"></div>
+      <section id="view-overview" class="view active"></section>
+      <section id="view-machines" class="view"></section>
+      <section id="view-events" class="view"></section>
+      <section id="view-deploy" class="view"></section>
+      <section id="view-files" class="view"></section>
+      <section id="view-alerts" class="view"></section>
+      <section id="view-rules" class="view"></section>
+      <section id="view-reports" class="view"></section>
+      <section id="view-settings" class="view"></section>
+    </main>
   </div>
 
   <script>
-    async function fetchJSON(url, agentKey) {
-      const res = await fetch(url, {
-        headers: agentKey ? { 'X-Agent-Key': agentKey } : {}
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || `Erreur ${res.status}`);
+    "use strict";
+
+    const DEFAULT_API_BASE = (window.INTEGRASEC_API_BASE || "http://localhost:8080").replace(/\/$/, "");
+
+    const state = {
+      currentView: "overview",
+      query: "",
+      apiBase: localStorage.getItem("integrasec.apiBase") || DEFAULT_API_BASE,
+      auth: {
+        agentKey: localStorage.getItem("integrasec.agentKey") || "",
+        bootstrapKey: localStorage.getItem("integrasec.bootstrapKey") || ""
+      },
+      machines: [],
+      events: [],
+      selectedMachineId: "",
+      selectedEventIndex: -1,
+      loading: {
+        machines: false,
+        events: false
+      },
+      errors: {
+        machines: "",
+        events: "",
+        health: ""
+      },
+      health: null,
+      deploy: {
+        step: 1,
+        os: "linux",
+        machineId: "",
+        hostname: "",
+        agentKey: "",
+        bootstrapKey: "",
+        paths: "/etc\n/var/www\n/opt"
+      },
+      eventsFilter: {
+        machine: "",
+        type: "",
+        limit: 50
+      },
+      machinesFilter: {
+        search: "",
+        status: "all"
       }
-      return data;
+    };
+
+    const views = [
+      { id: "overview", label: "Vue d’ensemble" },
+      { id: "machines", label: "Machines" },
+      { id: "events", label: "Événements" },
+      { id: "deploy", label: "Déploiement" },
+      { id: "files", label: "Fichiers" },
+      { id: "alerts", label: "Alertes" },
+      { id: "rules", label: "Règles" },
+      { id: "reports", label: "Rapports" },
+      { id: "settings", label: "Paramètres" }
+    ];
+
+    function el(tag, attrs = {}, children = []) {
+      const node = document.createElement(tag);
+      Object.entries(attrs).forEach(([key, value]) => {
+        if (key === "className") {
+          node.className = value;
+          return;
+        }
+        if (key === "text") {
+          node.textContent = value;
+          return;
+        }
+        if (key.startsWith("on") && typeof value === "function") {
+          node.addEventListener(key.slice(2).toLowerCase(), value);
+          return;
+        }
+        if (value !== undefined && value !== null) {
+          node.setAttribute(key, String(value));
+        }
+      });
+      (Array.isArray(children) ? children : [children]).forEach((child) => {
+        if (child === null || child === undefined) return;
+        node.appendChild(typeof child === "string" ? document.createTextNode(child) : child);
+      });
+      return node;
     }
 
-    async function refresh() {
-      const agentKey = document.getElementById('agentKey').value;
-      const healthEl = document.getElementById('health');
-      const machinesEl = document.getElementById('machines');
-      const eventsEl = document.getElementById('events');
+    function clear(node) {
+      while (node.firstChild) node.removeChild(node.firstChild);
+    }
 
-      try {
-        const health = await fetchJSON('/health');
-        healthEl.innerHTML = `<span class="ok">${health.status}</span> - ${health.timestamp_utc}`;
-      } catch (err) {
-        healthEl.innerHTML = `<span class="error">${err.message}</span>`;
+    async function apiRequest(path, { method = "GET", auth = false, body, bootstrap = false } = {}) {
+      const headers = {};
+      if (auth) {
+        const key = state.auth.agentKey.trim();
+        if (!key) {
+          throw new Error("Veuillez renseigner la clé agent (X-Agent-Key).");
+        }
+        headers["X-Agent-Key"] = key;
+      }
+      if (bootstrap) {
+        const key = state.deploy.bootstrapKey.trim() || state.auth.bootstrapKey.trim();
+        if (!key) throw new Error("Veuillez renseigner la clé bootstrap.");
+        headers["X-Bootstrap-Key"] = key;
+      }
+      if (body !== undefined) {
+        headers["Content-Type"] = "application/json";
       }
 
-      if (!agentKey) {
-        machinesEl.innerHTML = '<span class="error">Renseignez une clé agent pour charger les données.</span>';
-        eventsEl.textContent = '';
+      const response = await fetch(`${state.apiBase}${path}`, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body)
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = payload && typeof payload.error === "string" ? payload.error : `HTTP ${response.status}`;
+        throw new Error(message);
+      }
+      return payload;
+    }
+
+    function setView(id) {
+      state.currentView = id;
+      views.forEach((v) => {
+        const section = document.getElementById(`view-${v.id}`);
+        const button = document.querySelector(`[data-view="${v.id}"]`);
+        const active = v.id === id;
+        if (section) section.classList.toggle("active", active);
+        if (button) button.classList.toggle("active", active);
+      });
+    }
+
+    function severityCount(events, level) {
+      return events.filter((event) => event.severity === level).length;
+    }
+
+    function eventAgeMinutes(event) {
+      const ts = Date.parse(event.timestamp_utc);
+      if (Number.isNaN(ts)) return Infinity;
+      return Math.max(0, (Date.now() - ts) / 60000);
+    }
+
+    function deriveMachineStatus(machineID) {
+      const machineEvents = state.events.filter((event) => event.machine === machineID);
+      if (machineEvents.length === 0) return { label: "inconnu", className: "status-mid" };
+      const freshest = machineEvents.reduce((a, b) => (a.timestamp_utc > b.timestamp_utc ? a : b));
+      const age = eventAgeMinutes(freshest);
+      if (age <= 5) return { label: "actif", className: "status-ok" };
+      if (age <= 60) return { label: "idle", className: "status-mid" };
+      return { label: "hors ligne", className: "status-bad" };
+    }
+
+    function matchesGlobalQuery(value) {
+      if (!state.query) return true;
+      return String(value || "").toLowerCase().includes(state.query.toLowerCase());
+    }
+
+    function filteredMachines() {
+      return state.machines.filter((machine) => {
+        if (state.machinesFilter.search) {
+          const query = state.machinesFilter.search.toLowerCase();
+          const haystack = `${machine.id} ${machine.hostname}`.toLowerCase();
+          if (!haystack.includes(query)) return false;
+        }
+        if (!matchesGlobalQuery(`${machine.id} ${machine.hostname}`)) return false;
+        if (state.machinesFilter.status !== "all") {
+          const status = deriveMachineStatus(machine.id).label;
+          if (status !== state.machinesFilter.status) return false;
+        }
+        return true;
+      });
+    }
+
+    function filteredEvents() {
+      return state.events.filter((event) => {
+        if (!matchesGlobalQuery(`${event.machine} ${event.path} ${event.type} ${event.severity} ${event.old_hash || ""} ${event.new_hash || ""}`)) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    function formatUTC(value) {
+      if (!value) return "-";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? value : date.toISOString();
+    }
+
+    function setApiHealthVisual(status, text) {
+      const dot = document.getElementById("apiDot");
+      const label = document.getElementById("apiHealthText");
+      dot.className = `dot ${status}`;
+      label.textContent = text;
+    }
+
+    async function refreshHealth() {
+      try {
+        const health = await apiRequest("/health");
+        state.health = health;
+        state.errors.health = "";
+        setApiHealthVisual("ok", `API: ${health.status}`);
+      } catch (error) {
+        state.errors.health = error.message;
+        setApiHealthVisual("error", `API: ${error.message}`);
+      }
+      renderOverview();
+      renderSettings();
+    }
+
+    async function refreshMachines() {
+      state.loading.machines = true;
+      state.errors.machines = "";
+      renderMachines();
+      try {
+        state.machines = await apiRequest("/api/v1/machines", { auth: true });
+      } catch (error) {
+        state.errors.machines = error.message;
+        state.machines = [];
+      } finally {
+        state.loading.machines = false;
+      }
+      renderMachines();
+      renderOverview();
+      renderDeploy();
+    }
+
+    async function refreshEvents() {
+      state.loading.events = true;
+      state.errors.events = "";
+      renderEvents();
+      try {
+        const params = new URLSearchParams();
+        if (state.eventsFilter.machine) params.set("machine", state.eventsFilter.machine);
+        if (state.eventsFilter.type) params.set("type", state.eventsFilter.type);
+        params.set("limit", String(state.eventsFilter.limit || 50));
+        state.events = await apiRequest(`/api/v1/events?${params.toString()}`, { auth: true });
+      } catch (error) {
+        state.errors.events = error.message;
+        state.events = [];
+      } finally {
+        state.loading.events = false;
+      }
+      renderEvents();
+      renderOverview();
+      renderMachines();
+      updateNotifications();
+    }
+
+    async function refreshCore() {
+      await refreshHealth();
+      if (!state.auth.agentKey.trim()) {
+        state.errors.machines = "Saisissez une clé agent pour charger les données.";
+        state.errors.events = "Saisissez une clé agent pour charger les données.";
+        state.machines = [];
+        state.events = [];
+        renderMachines();
+        renderEvents();
+        renderOverview();
+        updateNotifications();
         return;
       }
+      await refreshMachines();
+      await refreshEvents();
+    }
 
-      try {
-        const machines = await fetchJSON('/api/v1/machines', agentKey);
-        machinesEl.innerHTML = renderMachines(machines);
-      } catch (err) {
-        machinesEl.innerHTML = `<span class="error">${err.message}</span>`;
+    function renderOverview() {
+      const root = document.getElementById("view-overview");
+      clear(root);
+
+      const events = filteredEvents();
+      const cards = el("div", { className: "grid-cards" }, [
+        kpiCard("Machines surveillées", String(state.machines.length)),
+        kpiCard("Agents actifs", String(state.machines.filter((m) => deriveMachineStatus(m.id).label === "actif").length)),
+        kpiCard("Événements récents", String(events.length)),
+        kpiCard("Alertes critiques", String(severityCount(events, "critical")))
+      ]);
+
+      const chartCard = el("div", { className: "card" }, [
+        el("h3", { className: "section-title", text: "Distribution des événements" }),
+        renderSeverityChart(events)
+      ]);
+
+      const machinesCard = el("div", { className: "card" }, [
+        el("h3", { className: "section-title", text: "Machines" }),
+        renderMachineMiniTable(filteredMachines().slice(0, 8))
+      ]);
+
+      const recentCard = el("div", { className: "card" }, [
+        el("h3", { className: "section-title", text: "Événements récents" }),
+        renderRecentEventList(events.slice(0, 8))
+      ]);
+
+      const healthCard = el("div", { className: "card" }, [
+        el("h3", { className: "section-title", text: "Santé API" }),
+        renderHealthSummary()
+      ]);
+
+      root.appendChild(cards);
+      root.appendChild(el("div", { className: "grid-two" }, [chartCard, healthCard]));
+      root.appendChild(el("div", { className: "grid-two" }, [machinesCard, recentCard]));
+    }
+
+    function kpiCard(label, value) {
+      return el("article", { className: "card" }, [
+        el("div", { className: "kpi-label", text: label }),
+        el("div", { className: "kpi-value", text: value })
+      ]);
+    }
+
+    function renderSeverityChart(events) {
+      const levels = ["critical", "high", "medium", "low"];
+      const total = Math.max(1, events.length);
+      const wrap = el("div");
+      levels.forEach((level) => {
+        const count = severityCount(events, level);
+        const row = el("div", { className: "chart-row" }, [
+          el("span", { text: level }),
+          el("div", { className: "chart-track" }, [
+            el("div", { className: "chart-bar", style: `width: ${(count / total) * 100}%` })
+          ]),
+          el("strong", { text: String(count) })
+        ]);
+        wrap.appendChild(row);
+      });
+      return wrap;
+    }
+
+    function renderMachineMiniTable(machines) {
+      if (state.errors.machines) return el("p", { className: "error", text: state.errors.machines });
+      if (state.loading.machines) return el("p", { className: "muted", text: "Chargement…" });
+      if (machines.length === 0) return el("p", { className: "muted", text: "Aucune machine." });
+
+      const table = el("table");
+      table.appendChild(el("thead", {}, el("tr", {}, [
+        el("th", { text: "Hostname" }),
+        el("th", { text: "ID" }),
+        el("th", { text: "État" })
+      ])));
+
+      const body = el("tbody");
+      machines.forEach((machine) => {
+        const status = deriveMachineStatus(machine.id);
+        const row = el("tr", {}, [
+          el("td", { text: machine.hostname }),
+          el("td", { text: machine.id }),
+          el("td", {}, el("span", { className: `status-badge ${status.className}`, text: status.label }))
+        ]);
+        body.appendChild(row);
+      });
+      table.appendChild(body);
+      return table;
+    }
+
+    function renderRecentEventList(events) {
+      if (state.errors.events) return el("p", { className: "error", text: state.errors.events });
+      if (state.loading.events) return el("p", { className: "muted", text: "Chargement…" });
+      if (events.length === 0) return el("p", { className: "muted", text: "Aucun événement." });
+
+      const table = el("table");
+      table.appendChild(el("thead", {}, el("tr", {}, [
+        el("th", { text: "UTC" }),
+        el("th", { text: "Machine" }),
+        el("th", { text: "Type" }),
+        el("th", { text: "Sévérité" })
+      ])));
+      const body = el("tbody");
+      events.forEach((event) => {
+        body.appendChild(el("tr", {}, [
+          el("td", { text: formatUTC(event.timestamp_utc) }),
+          el("td", { text: event.machine }),
+          el("td", { text: event.type }),
+          el("td", { text: event.severity })
+        ]));
+      });
+      table.appendChild(body);
+      return table;
+    }
+
+    function renderHealthSummary() {
+      if (state.errors.health) return el("p", { className: "error", text: state.errors.health });
+      if (!state.health) return el("p", { className: "muted", text: "En attente…" });
+      return el("div", {}, [
+        el("p", {}, [el("strong", { text: "Statut : " }), document.createTextNode(String(state.health.status || "-"))]),
+        el("p", {}, [el("strong", { text: "Horodatage UTC : " }), document.createTextNode(formatUTC(state.health.timestamp_utc))])
+      ]);
+    }
+
+    function renderMachines() {
+      const root = document.getElementById("view-machines");
+      clear(root);
+
+      const selected = state.machines.find((machine) => machine.id === state.selectedMachineId) || null;
+      const machineEvents = selected ? state.events.filter((event) => event.machine === selected.id) : [];
+      const lastEvent = machineEvents.length ? machineEvents.reduce((a, b) => (a.timestamp_utc > b.timestamp_utc ? a : b)) : null;
+
+      const toolbar = el("div", { className: "toolbar card" }, [
+        el("input", {
+          type: "search",
+          placeholder: "Recherche hostname / machine ID",
+          value: state.machinesFilter.search,
+          oninput: (event) => {
+            state.machinesFilter.search = event.target.value;
+            renderMachines();
+          }
+        }),
+        el("select", {
+          onchange: (event) => {
+            state.machinesFilter.status = event.target.value;
+            renderMachines();
+          }
+        }, [
+          option("all", "Tous les états", state.machinesFilter.status),
+          option("actif", "Actif", state.machinesFilter.status),
+          option("idle", "Idle", state.machinesFilter.status),
+          option("hors ligne", "Hors ligne", state.machinesFilter.status),
+          option("inconnu", "Inconnu", state.machinesFilter.status)
+        ]),
+        el("button", { className: "ghost", onclick: refreshMachines, text: "Rafraîchir" })
+      ]);
+
+      const tableCard = el("div", { className: "card" });
+      const table = el("table");
+      table.appendChild(el("thead", {}, el("tr", {}, [
+        el("th", { text: "Hostname" }),
+        el("th", { text: "Machine ID" }),
+        el("th", { text: "Inscrite UTC" }),
+        el("th", { text: "État" })
+      ])));
+
+      const body = el("tbody");
+      if (state.loading.machines) {
+        body.appendChild(el("tr", {}, el("td", { colspan: 4, className: "muted", text: "Chargement des machines…" })));
+      } else if (state.errors.machines) {
+        body.appendChild(el("tr", {}, el("td", { colspan: 4, className: "error", text: state.errors.machines })));
+      } else {
+        const machines = filteredMachines();
+        if (machines.length === 0) {
+          body.appendChild(el("tr", {}, el("td", { colspan: 4, className: "muted", text: "Aucune machine trouvée." })));
+        } else {
+          machines.forEach((machine) => {
+            const status = deriveMachineStatus(machine.id);
+            const row = el("tr", {
+              onclick: () => {
+                state.selectedMachineId = machine.id;
+                renderMachines();
+              }
+            }, [
+              el("td", { text: machine.hostname }),
+              el("td", { text: machine.id }),
+              el("td", { text: formatUTC(machine.registered_utc) }),
+              el("td", {}, el("span", { className: `status-badge ${status.className}`, text: status.label }))
+            ]);
+            if (state.selectedMachineId === machine.id) row.style.background = "#f6fbfc";
+            body.appendChild(row);
+          });
+        }
       }
+      table.appendChild(body);
+      tableCard.appendChild(table);
 
+      const detailCard = el("div", { className: "card" }, [
+        el("h3", { className: "section-title", text: "Détails machine" }),
+        selected
+          ? el("dl", { className: "detail-list" }, [
+              el("dt", { text: "Hostname" }), el("dd", { text: selected.hostname }),
+              el("dt", { text: "Machine ID" }), el("dd", { text: selected.id }),
+              el("dt", { text: "Enregistrée" }), el("dd", { text: formatUTC(selected.registered_utc) }),
+              el("dt", { text: "Dernier événement" }), el("dd", { text: lastEvent ? formatUTC(lastEvent.timestamp_utc) : "Aucun" }),
+              el("dt", { text: "Chemin" }), el("dd", { text: lastEvent ? lastEvent.path : "-" }),
+              el("dt", { text: "Type" }), el("dd", { text: lastEvent ? lastEvent.type : "-" })
+            ])
+          : el("p", { className: "muted", text: "Sélectionnez une machine pour afficher ses informations." })
+      ]);
+
+      root.appendChild(toolbar);
+      root.appendChild(el("div", { className: "split" }, [tableCard, detailCard]));
+    }
+
+    function option(value, label, current) {
+      const node = el("option", { value, text: label });
+      node.selected = value === current;
+      return node;
+    }
+
+    function renderEvents() {
+      const root = document.getElementById("view-events");
+      clear(root);
+
+      const toolbar = el("div", { className: "toolbar card" }, [
+        el("select", {
+          onchange: (event) => {
+            state.eventsFilter.machine = event.target.value;
+          }
+        }, [
+          option("", "Toutes les machines", state.eventsFilter.machine),
+          ...state.machines.map((machine) => option(machine.id, machine.hostname + " (" + machine.id + ")", state.eventsFilter.machine))
+        ]),
+        el("select", {
+          onchange: (event) => {
+            state.eventsFilter.type = event.target.value;
+          }
+        }, [
+          option("", "Tous les types", state.eventsFilter.type),
+          option("added", "added", state.eventsFilter.type),
+          option("modified", "modified", state.eventsFilter.type),
+          option("deleted", "deleted", state.eventsFilter.type)
+        ]),
+        el("select", {
+          onchange: (event) => {
+            state.eventsFilter.limit = Number(event.target.value) || 50;
+          }
+        }, [
+          option("20", "20", String(state.eventsFilter.limit)),
+          option("50", "50", String(state.eventsFilter.limit)),
+          option("100", "100", String(state.eventsFilter.limit)),
+          option("200", "200", String(state.eventsFilter.limit))
+        ]),
+        el("button", { className: "primary", onclick: refreshEvents, text: "Appliquer" }),
+        el("button", { className: "ghost", onclick: () => {
+          state.eventsFilter.machine = "";
+          state.eventsFilter.type = "";
+          state.eventsFilter.limit = 50;
+          refreshEvents();
+        }, text: "Réinitialiser" })
+      ]);
+
+      const detailEvent = state.selectedEventIndex >= 0 ? filteredEvents()[state.selectedEventIndex] : null;
+
+      const tableCard = el("div", { className: "card" });
+      const table = el("table");
+      table.appendChild(el("thead", {}, el("tr", {}, [
+        el("th", { text: "UTC" }),
+        el("th", { text: "Machine" }),
+        el("th", { text: "Type" }),
+        el("th", { text: "Chemin" }),
+        el("th", { text: "Sévérité" })
+      ])));
+
+      const body = el("tbody");
+      if (state.loading.events) {
+        body.appendChild(el("tr", {}, el("td", { colspan: 5, className: "muted", text: "Chargement des événements…" })));
+      } else if (state.errors.events) {
+        body.appendChild(el("tr", {}, el("td", { colspan: 5, className: "error", text: state.errors.events })));
+      } else {
+        const events = filteredEvents();
+        if (events.length === 0) {
+          body.appendChild(el("tr", {}, el("td", { colspan: 5, className: "muted", text: "Aucun événement pour ces filtres." })));
+        } else {
+          events.forEach((event, index) => {
+            const row = el("tr", {
+              onclick: () => {
+                state.selectedEventIndex = index;
+                renderEvents();
+              }
+            }, [
+              el("td", { text: formatUTC(event.timestamp_utc) }),
+              el("td", { text: event.machine }),
+              el("td", { text: event.type }),
+              el("td", { text: event.path }),
+              el("td", { text: event.severity })
+            ]);
+            if (state.selectedEventIndex === index) row.style.background = "#f6fbfc";
+            body.appendChild(row);
+          });
+        }
+      }
+      table.appendChild(body);
+      tableCard.appendChild(table);
+
+      const detailCard = el("div", { className: "card" }, [
+        el("h3", { className: "section-title", text: "Détails événement" }),
+        detailEvent
+          ? eventDetailPanel(detailEvent)
+          : el("p", { className: "muted", text: "Sélectionnez un événement." })
+      ]);
+
+      root.appendChild(toolbar);
+      root.appendChild(el("div", { className: "split" }, [tableCard, detailCard]));
+    }
+
+    function eventDetailPanel(event) {
+      const wrap = el("div");
+      const list = el("dl", { className: "detail-list" }, [
+        el("dt", { text: "Machine" }), el("dd", { text: event.machine }),
+        el("dt", { text: "Type" }), el("dd", { text: event.type }),
+        el("dt", { text: "Sévérité" }), el("dd", { text: event.severity }),
+        el("dt", { text: "Chemin" }), el("dd", { text: event.path }),
+        el("dt", { text: "Timestamp UTC" }), el("dd", { text: formatUTC(event.timestamp_utc) }),
+        el("dt", { text: "Old SHA-256" }), hashDetail(event.old_hash),
+        el("dt", { text: "New SHA-256" }), hashDetail(event.new_hash)
+      ]);
+      wrap.appendChild(list);
+      return wrap;
+    }
+
+    function hashDetail(value) {
+      const dd = el("dd");
+      if (!value) {
+        dd.textContent = "-";
+        return dd;
+      }
+      const block = el("div", {}, [
+        el("code", { text: value }),
+        el("div", { style: "margin-top:0.35rem" }, [
+          el("button", {
+            className: "ghost",
+            text: "Copier",
+            onclick: async () => {
+              try {
+                await navigator.clipboard.writeText(value);
+              } catch (_err) {
+                window.alert("Copie impossible dans ce navigateur.");
+              }
+            }
+          })
+        ])
+      ]);
+      dd.appendChild(block);
+      return dd;
+    }
+
+    function renderDeploy() {
+      const root = document.getElementById("view-deploy");
+      clear(root);
+
+      const card = el("div", { className: "card" });
+      card.appendChild(el("h3", { className: "section-title", text: "Assistant de déploiement agent (MVP local)" }));
+      card.appendChild(el("p", { className: "muted", text: "Cette version n’implémente pas TLS/mTLS/eBPF/HMAC. Les clés sont masquées par défaut et ne doivent pas être partagées." }));
+
+      const steps = el("div", { className: "wizard-steps" }, [
+        wizardStep(1, "Système"),
+        wizardStep(2, "Machine"),
+        wizardStep(3, "Chemins"),
+        wizardStep(4, "Génération")
+      ]);
+      card.appendChild(steps);
+
+      card.appendChild(stepSystem());
+      card.appendChild(stepMachine());
+      card.appendChild(stepPaths());
+      card.appendChild(stepGenerate());
+
+      card.appendChild(el("div", { className: "toolbar" }, [
+        el("button", {
+          className: "ghost",
+          text: "Précédent",
+          onclick: () => {
+            state.deploy.step = Math.max(1, state.deploy.step - 1);
+            renderDeploy();
+          }
+        }),
+        el("button", {
+          className: "primary",
+          text: state.deploy.step === 4 ? "Enregistrer & générer" : "Suivant",
+          onclick: async () => {
+            if (state.deploy.step < 4) {
+              state.deploy.step += 1;
+              renderDeploy();
+              return;
+            }
+            await registerAndGenerate();
+          }
+        })
+      ]));
+
+      root.appendChild(card);
+    }
+
+    function wizardStep(step, label) {
+      return el("button", {
+        className: `step ${state.deploy.step === step ? "active" : ""}`,
+        type: "button",
+        onclick: () => {
+          state.deploy.step = step;
+          renderDeploy();
+        },
+        text: `${step}. ${label}`
+      });
+    }
+
+    function stepWrap(step, children) {
+      return el("div", { className: `step-body ${state.deploy.step === step ? "active" : ""}` }, children);
+    }
+
+    function stepSystem() {
+      return stepWrap(1, [
+        el("div", { className: "toolbar" }, [
+          el("label", { className: "muted", text: "Système" }),
+          el("select", {
+            onchange: (event) => {
+              state.deploy.os = event.target.value;
+            }
+          }, [
+            option("linux", "Linux", state.deploy.os),
+            option("linux-systemd", "Linux + systemd", state.deploy.os)
+          ])
+        ]),
+        el("p", { className: "muted", text: "MVP actuel orienté Linux. Commandes affichées en shell local." })
+      ]);
+    }
+
+    function stepMachine() {
+      return stepWrap(2, [
+        el("div", { className: "toolbar" }, [
+          el("input", {
+            placeholder: "Machine ID (ex: linux-01)",
+            value: state.deploy.machineId,
+            oninput: (event) => {
+              state.deploy.machineId = event.target.value;
+            }
+          }),
+          el("input", {
+            placeholder: "Hostname",
+            value: state.deploy.hostname,
+            oninput: (event) => {
+              state.deploy.hostname = event.target.value;
+            }
+          })
+        ]),
+        el("div", { className: "toolbar" }, [
+          el("input", {
+            type: "password",
+            placeholder: "Clé bootstrap (X-Bootstrap-Key)",
+            value: state.deploy.bootstrapKey,
+            oninput: (event) => {
+              state.deploy.bootstrapKey = event.target.value;
+              state.auth.bootstrapKey = event.target.value;
+              localStorage.setItem("integrasec.bootstrapKey", state.auth.bootstrapKey);
+            }
+          }),
+          el("input", {
+            type: "password",
+            placeholder: "Clé agent (16-128 chars)",
+            value: state.deploy.agentKey,
+            oninput: (event) => {
+              state.deploy.agentKey = event.target.value;
+              state.auth.agentKey = event.target.value;
+              localStorage.setItem("integrasec.agentKey", state.auth.agentKey);
+            }
+          })
+        ]),
+        el("p", { className: "muted", text: "Les clés restent locales dans ce navigateur (localStorage)." })
+      ]);
+    }
+
+    function stepPaths() {
+      return stepWrap(3, [
+        el("p", { className: "muted", text: "Saisissez un chemin absolu par ligne." }),
+        el("textarea", {
+          oninput: (event) => {
+            state.deploy.paths = event.target.value;
+          }
+        }, state.deploy.paths)
+      ]);
+    }
+
+    function stepGenerate() {
+      const config = generatedConfig();
+      const command = generatedCommand(config);
+      return stepWrap(4, [
+        el("p", { className: "muted", text: "Étape finale : enregistrement machine puis génération des instructions." }),
+        el("h4", { text: "Configuration agent JSON" }),
+        el("pre", { id: "generatedConfig", text: JSON.stringify(config, null, 2) }),
+        el("div", { className: "toolbar" }, [
+          el("button", {
+            className: "ghost",
+            text: "Copier JSON",
+            onclick: () => copyText(JSON.stringify(config, null, 2))
+          }),
+          el("button", {
+            className: "ghost",
+            text: "Télécharger JSON",
+            onclick: () => downloadConfig(config)
+          })
+        ]),
+        el("h4", { text: "Commande MVP" }),
+        el("pre", { text: command }),
+        el("div", { id: "deployFeedback", className: "muted" })
+      ]);
+    }
+
+    function generatedConfig() {
+      const paths = state.deploy.paths
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.startsWith("/"));
+      return {
+        machine_id: state.deploy.machineId || "machine-id",
+        paths: paths.length ? paths : ["/etc"],
+        baseline_path: "./data/baseline.json",
+        backend_url: state.apiBase,
+        agent_key_env: "INTEGRASEC_AGENT_KEY",
+        watch_interval_seconds: 30,
+        output: "text"
+      };
+    }
+
+    function generatedCommand(config) {
+      return [
+        "export INTEGRASEC_AGENT_KEY='<agent_key>'",
+        "integrasec-agent baseline --config ./config.json",
+        "integrasec-agent watch --config ./config.json",
+        `# Backend cible: ${config.backend_url}`
+      ].join("\n");
+    }
+
+    async function registerAndGenerate() {
+      const feedback = document.getElementById("deployFeedback");
+      if (!state.deploy.machineId || !state.deploy.hostname || !state.deploy.agentKey) {
+        feedback.className = "error";
+        feedback.textContent = "Renseignez machine_id, hostname et clé agent.";
+        return;
+      }
       try {
-        const events = await fetchJSON('/api/v1/events?limit=20', agentKey);
-        eventsEl.innerHTML = renderEvents(events);
-      } catch (err) {
-        eventsEl.innerHTML = `<span class="error">${err.message}</span>`;
+        await apiRequest("/api/v1/machines/register", {
+          method: "POST",
+          bootstrap: true,
+          body: {
+            machine_id: state.deploy.machineId.trim(),
+            hostname: state.deploy.hostname.trim(),
+            agent_key: state.deploy.agentKey
+          }
+        });
+        feedback.className = "muted";
+        feedback.textContent = "Machine enregistrée avec succès. Configuration prête.";
+        state.auth.agentKey = state.deploy.agentKey;
+        localStorage.setItem("integrasec.agentKey", state.auth.agentKey);
+        await refreshMachines();
+      } catch (error) {
+        feedback.className = "error";
+        feedback.textContent = `Échec d’enregistrement: ${error.message}`;
       }
     }
 
-    function renderMachines(machines) {
-      if (!machines.length) return 'Aucune machine.';
-      const rows = machines.map(m => `<tr><td>${m.id}</td><td>${m.hostname}</td><td>${m.registered_utc}</td></tr>`).join('');
-      return `<table><thead><tr><th>ID</th><th>Hostname</th><th>Enregistrée (UTC)</th></tr></thead><tbody>${rows}</tbody></table>`;
+    function copyText(value) {
+      navigator.clipboard.writeText(value).catch(() => {
+        window.alert("Copie impossible dans ce navigateur.");
+      });
     }
 
-    function renderEvents(events) {
-      if (!events.length) return 'Aucun événement.';
-      const rows = events.map(e => `<tr><td>${e.timestamp_utc}</td><td>${e.machine}</td><td>${e.type}</td><td>${e.path}</td><td>${e.severity}</td></tr>`).join('');
-      return `<table><thead><tr><th>Timestamp UTC</th><th>Machine</th><th>Type</th><th>Path</th><th>Sévérité</th></tr></thead><tbody>${rows}</tbody></table>`;
+    function downloadConfig(config) {
+      const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${config.machine_id || "integrasec-agent"}.config.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
     }
 
-    document.getElementById('refreshBtn').addEventListener('click', refresh);
-    refresh();
+    function renderComingSoon(targetID, title) {
+      const root = document.getElementById(targetID);
+      clear(root);
+      root.appendChild(el("div", { className: "card coming-soon" }, [
+        el("div", {}, [
+          el("h3", { className: "section-title", text: title }),
+          el("p", { className: "muted", text: "Fonctionnalité à venir. Les visuels seront enrichis dès que les endpoints backend dédiés seront disponibles." }),
+          el("p", { className: "muted", text: "Aucune donnée de production n’est simulée ici." })
+        ])
+      ]));
+    }
+
+    function renderSettings() {
+      const root = document.getElementById("view-settings");
+      clear(root);
+      root.appendChild(el("div", { className: "card" }, [
+        el("h3", { className: "section-title", text: "Paramètres locaux" }),
+        el("p", { className: "muted", text: "Configuration stockée localement dans votre navigateur pour ce MVP." }),
+        el("div", { className: "detail-list" }, [
+          el("dt", { text: "API base URL" }), el("dd", { text: state.apiBase }),
+          el("dt", { text: "Clé agent" }), el("dd", { text: state.auth.agentKey ? "définie" : "non définie" }),
+          el("dt", { text: "Clé bootstrap" }), el("dd", { text: state.auth.bootstrapKey ? "définie" : "non définie" }),
+          el("dt", { text: "Santé API" }), el("dd", { text: state.errors.health || (state.health ? String(state.health.status) : "inconnue") })
+        ])
+      ]));
+    }
+
+    function updateNotifications() {
+      const critical = severityCount(state.events, "critical");
+      document.getElementById("notifCount").textContent = String(critical);
+    }
+
+    function initNav() {
+      const nav = document.getElementById("nav");
+      views.forEach((view) => {
+        nav.appendChild(el("button", {
+          type: "button",
+          className: view.id === state.currentView ? "active" : "",
+          "data-view": view.id,
+          text: view.label,
+          onclick: () => setView(view.id)
+        }));
+      });
+    }
+
+    function setupTopbar() {
+      const apiBaseInput = document.getElementById("apiBase");
+      const agentKeyInput = document.getElementById("agentKeyInput");
+      const bootstrapKeyInput = document.getElementById("bootstrapKeyInput");
+      apiBaseInput.value = state.apiBase;
+      agentKeyInput.value = state.auth.agentKey;
+      bootstrapKeyInput.value = state.auth.bootstrapKey;
+
+      agentKeyInput.addEventListener("change", (event) => {
+        state.auth.agentKey = event.target.value;
+        localStorage.setItem("integrasec.agentKey", state.auth.agentKey);
+        state.deploy.agentKey = state.auth.agentKey;
+      });
+
+      bootstrapKeyInput.addEventListener("change", (event) => {
+        state.auth.bootstrapKey = event.target.value;
+        localStorage.setItem("integrasec.bootstrapKey", state.auth.bootstrapKey);
+        state.deploy.bootstrapKey = state.auth.bootstrapKey;
+      });
+
+      apiBaseInput.addEventListener("change", async (event) => {
+        state.apiBase = (event.target.value || DEFAULT_API_BASE).replace(/\/$/, "");
+        localStorage.setItem("integrasec.apiBase", state.apiBase);
+        await refreshCore();
+      });
+
+      document.getElementById("applySearch").addEventListener("click", () => {
+        state.query = document.getElementById("globalSearch").value.trim();
+        renderOverview();
+        renderMachines();
+        renderEvents();
+      });
+
+      document.getElementById("toDeploy").addEventListener("click", () => setView("deploy"));
+      document.getElementById("refreshData").addEventListener("click", refreshCore);
+    }
+
+    function syncDeployDefaults() {
+      state.deploy.agentKey = state.auth.agentKey;
+      state.deploy.bootstrapKey = state.auth.bootstrapKey;
+      if (state.machines.length > 0 && !state.deploy.machineId) {
+        state.deploy.machineId = state.machines[0].id;
+      }
+    }
+
+    async function init() {
+      initNav();
+      setupTopbar();
+      renderComingSoon("view-files", "Fichiers surveillés");
+      renderComingSoon("view-alerts", "Alertes");
+      renderComingSoon("view-rules", "Règles");
+      renderComingSoon("view-reports", "Rapports");
+      renderSettings();
+      renderOverview();
+      renderMachines();
+      renderEvents();
+      renderDeploy();
+      await refreshCore();
+      syncDeployDefaults();
+      renderDeploy();
+      updateNotifications();
+    }
+
+    init().catch((error) => {
+      setApiHealthVisual("error", `Erreur init: ${error.message}`);
+    });
   </script>
 </body>
 </html>
