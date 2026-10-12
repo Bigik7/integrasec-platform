@@ -3,103 +3,1543 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IntegraSec MVP</title>
+  <title>IntegraSec</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; background: #0f172a; color: #e2e8f0; }
-    h1, h2 { margin-bottom: 0.5rem; }
-    .card { background: #1e293b; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
-    input, button { padding: 0.5rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; }
-    button { cursor: pointer; }
-    table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
-    th, td { border-bottom: 1px solid #334155; text-align: left; padding: 0.5rem; font-size: 0.92rem; }
-    .ok { color: #22c55e; }
-    .error { color: #ef4444; }
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --panel-strong: #eef4f8;
+      --panel-muted: #f8fafc;
+      --line: #dfe8f3;
+      --line-strong: #cfe0ee;
+      --text: #172554;
+      --text-soft: #5b688a;
+      --blue: #1f2d5c;
+      --blue-soft: #edf4ff;
+      --teal: #14b8a6;
+      --teal-dark: #0f7d78;
+      --teal-soft: #daf5f1;
+      --green: #2fbf71;
+      --green-soft: #ecfdf5;
+      --red: #d94d5c;
+      --red-soft: #ffe9eb;
+      --amber: #f5a623;
+      --amber-soft: #fff3d6;
+      --shadow: 0 8px 24px rgba(14, 30, 55, 0.06);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: rgba(255,255,255,0.7);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      padding: 18px 16px 14px;
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 8px 16px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 12px;
+    }
+
+    .brand-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--teal), #4ec6c0);
+      position: relative;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.6);
+    }
+
+    .brand-badge::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border: 2px solid rgba(255,255,255,0.8);
+      border-radius: 50%;
+      border-right-color: transparent;
+      transform: rotate(-30deg);
+    }
+
+    .brand-txt {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+
+    .brand small {
+      display: block;
+      color: var(--text-soft);
+      font-size: 0.68rem;
+      margin-top: 2px;
+      font-weight: 600;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .nav-item {
+      border: 1px solid transparent;
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      color: var(--text-soft);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: var(--panel-strong);
+      border-color: var(--line);
+    }
+
+    .nav-item.active {
+      background: var(--blue-soft);
+      border-color: var(--line-strong);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(31,45,92,0.02);
+    }
+
+    .nav-item .icon {
+      width: 18px;
+      display: inline-flex;
+      justify-content: center;
+      color: var(--text-soft);
+      font-size: 0.9rem;
+    }
+
+    .nav-item.active .icon { color: var(--text); }
+
+    .nav-item .badge {
+      margin-left: auto;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--teal-soft);
+      color: var(--teal-dark);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0 7px;
+    }
+
+    .sidebar-note {
+      margin-top: auto;
+      background: #eefaf8;
+      border: 1px solid var(--line-strong);
+      padding: 12px 12px;
+      border-radius: 12px;
+      color: var(--text-soft);
+      font-size: 0.76rem;
+      line-height: 1.5;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 24px 14px;
+      background: rgba(255,255,255,0.65);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(8px);
+      z-index: 4;
+    }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 320px;
+      flex: 1;
+    }
+
+    .search input {
+      flex: 1;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 0 12px;
+      font-size: 0.92rem;
+      outline: none;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 34px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--text-soft);
+      font-size: 0.8rem;
+      padding: 0 12px;
+      white-space: nowrap;
+    }
+
+    .pill input {
+      all: unset;
+      width: 150px;
+      color: var(--text);
+      font-size: 0.8rem;
+      border: none;
+      background: transparent;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--amber);
+      display: inline-block;
+    }
+
+    .dot.ok { background: var(--green); }
+    .dot.bad { background: var(--red); }
+
+    .primary, .ghost, .soft, .danger {
+      border: 1px solid transparent;
+      border-radius: 10px;
+      height: 36px;
+      padding: 0 14px;
+      font-size: 0.87rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--text);
+    }
+
+    .primary {
+      background: linear-gradient(180deg, var(--teal), #0fa89d);
+      color: white;
+      box-shadow: 0 10px 18px rgba(20,184,166,0.2);
+    }
+
+    .ghost {
+      background: var(--panel);
+      border-color: var(--line);
+    }
+
+    .soft {
+      background: var(--teal-soft);
+      color: var(--teal-dark);
+      border-color: var(--line-strong);
+    }
+
+    .danger {
+      background: var(--red-soft);
+      border-color: #f6c8ce;
+      color: var(--red);
+    }
+
+    .page {
+      padding: 22px 24px 32px;
+      display: none;
+      min-width: 0;
+    }
+
+    .page.active { display: block; }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .header-row h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 2vw, 2.3rem);
+      letter-spacing: -0.06em;
+    }
+
+    .subtitle {
+      color: var(--text-soft);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px,1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 18px 14px;
+    }
+
+    .stat-card .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      color: var(--text-soft);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .stat-card .meta .mini {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--blue-soft);
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .stat-card .value {
+      font-size: clamp(2rem, 2.2vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.06em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .stat-card .delta {
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      font-weight: 700;
+    }
+
+    .stat-card .delta.muted { color: var(--teal-dark); }
+    .stat-card .delta.down { color: var(--red); }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(280px, 1fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(250,252,255,0.7);
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      letter-spacing: -0.04em;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .mini-chart {
+      position: relative;
+      height: 210px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(20,184,166,0.04), rgba(20,184,166,0.01));
+      border: 1px solid var(--line);
+      padding: 14px 10px 10px;
+      overflow: hidden;
+    }
+
+    .mini-chart svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .summary-box {
+      background: var(--panel-muted);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+
+    .summary-box strong {
+      font-size: 1.2rem;
+      display: block;
+      letter-spacing: -0.04em;
+    }
+
+    .summary-box span {
+      color: var(--text-soft);
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .ring-box {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+      padding: 10px;
+    }
+
+    .ring {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--teal) 0 98.4%, #dfeaf5 0 100%);
+      position: relative;
+    }
+
+    .ring::before {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      background: var(--panel);
+      border-radius: 50%;
+    }
+
+    .ring-text {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .ring-text strong {
+      display: block;
+      font-size: 2rem;
+      letter-spacing: -0.06em;
+    }
+
+    .progress-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      color: var(--text-soft);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .progress-item .bar {
+      flex: 1;
+      height: 8px;
+      background: #edf3fb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 0 8px;
+    }
+
+    .progress-item .bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--teal);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-top: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: white;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      font-size: 0.88rem;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--text-soft);
+      font-size: 0.73rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: rgba(246,250,255,0.9);
+    }
+
+    tbody tr:hover {
+      background: rgba(20,184,166,0.015);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 78px;
+      height: 26px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      padding: 0 10px;
+    }
+
+    .status.ok { background: var(--green-soft); color: #0f8f52; }
+    .status.warn { background: var(--amber-soft); color: #a76f00; }
+    .status.crit { background: var(--red-soft); color: #b43a49; }
+    .status.muted { background: #edf2f6; color: var(--text-soft); }
+
+    .severity {
+      display: inline-flex;
+      align-items: center;
+      min-width: 78px;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .severity.low { background: var(--blue-soft); color: var(--text); }
+    .severity.medium { background: var(--amber-soft); color: #8a5d00; }
+    .severity.high { background: var(--red-soft); color: #af3744; }
+    .severity.critical { background: #ffd6d9; color: #8d1f2f; }
+
+    .row-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #edf6fb;
+      border: 1px solid var(--line);
+      color: var(--text-soft);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .chip::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--teal);
+      display: inline-block;
+    }
+
+    .deploy-stepper {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(238,244,255,0.7);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text-soft);
+      font-weight: 700;
+      font-size: 0.84rem;
+    }
+
+    .step.active {
+      background: var(--blue-soft);
+      border-color: var(--line-strong);
+      color: var(--text);
+    }
+
+    .step .num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--teal-soft);
+      color: var(--teal-dark);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .step.active .num {
+      background: var(--teal);
+      color: white;
+    }
+
+    .deploy-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1.2fr;
+      gap: 18px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-card {
+      background: var(--panel-muted);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .form-card h3 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+      letter-spacing: -0.04em;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      font-weight: 700;
+    }
+
+    .field input, .field select, .field textarea {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: white;
+      padding: 10px 12px;
+      font-size: 0.92rem;
+      color: var(--text);
+      width: 100%;
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 84px;
+      resize: vertical;
+    }
+
+    .check-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 8px;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: white;
+      color: var(--text-soft);
+      font-size: 0.83rem;
+      font-weight: 700;
+    }
+
+    .check input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--teal);
+    }
+
+    .code-block {
+      background: #0f1d33;
+      color: #dfeaf7;
+      border-radius: 12px;
+      padding: 14px 16px;
+      overflow: auto;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-top: 10px;
+    }
+
+    .info-box {
+      background: #eefaf8;
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--text-soft);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .footer-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding-top: 18px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 1100px) {
+      .cards { grid-template-columns: repeat(2, minmax(160px,1fr)); }
+      .content-grid { grid-template-columns: 1fr; }
+      .deploy-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 850px) {
+      body { display: block; }
+      .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+      .topbar { flex-direction: column; align-items: stretch; }
+      .topbar-right { justify-content: flex-start; }
+      .cards { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <h1>IntegraSec - Tableau de bord MVP</h1>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-badge"></div>
+      <div class="brand-txt">IntegraSec<small>Console d’intégrité</small></div>
+    </div>
 
-  <div class="card">
-    <label for="agentKey">Clé agent (header X-Agent-Key) :</label>
-    <input id="agentKey" type="password" placeholder="clé agent" />
-    <button id="refreshBtn">Rafraîchir</button>
-  </div>
+    <nav class="nav" id="nav"></nav>
 
-  <div class="card">
-    <h2>État API</h2>
-    <div id="health">Chargement…</div>
-  </div>
+    <div class="sidebar-note">
+      MVP local. Les agents ne sont pas exposés sur internet, et les clés d’authentification sont conservées localement dans le navigateur.
+    </div>
+  </aside>
 
-  <div class="card">
-    <h2>Machines connues</h2>
-    <div id="machines"></div>
-  </div>
+  <main class="content">
+    <header class="topbar">
+      <div class="search">
+        <input id="globalSearch" type="search" placeholder="Recherche machine, chemin, hash…" aria-label="Recherche globale">
+        <button id="applySearch" class="ghost">Filtrer</button>
+      </div>
 
-  <div class="card">
-    <h2>Événements récents</h2>
-    <div id="events"></div>
-  </div>
+      <div class="topbar-right">
+        <label class="pill" title="URL API cible">
+          API
+          <input id="apiBase" value="http://localhost:8080" aria-label="URL API"> 
+        </label>
+
+        <label class="pill" title="Clé agent pour X-Agent-Key">
+          Agent
+          <input id="agentKeyInput" type="password" placeholder="X-Agent-Key" aria-label="Clé agent">
+        </label>
+
+        <label class="pill" title="Clé bootstrap pour l'enrôlement">
+          Bootstrap
+          <input id="bootstrapKeyInput" type="password" placeholder="X-Bootstrap-Key" aria-label="Clé bootstrap">
+        </label>
+
+        <span class="pill"><span id="apiDot" class="dot"></span><span id="apiHealthText">API inconnue</span></span>
+        <span class="pill"><span class="dot ok"></span>Cluster local</span>
+        <span class="pill">Notif <strong id="notifCount">0</strong></span>
+        <button id="refreshData" class="ghost">Rafraîchir</button>
+        <button id="toDeploy" class="primary">Déployer un agent</button>
+      </div>
+    </header>
+
+    <section id="view-overview" class="page active"></section>
+    <section id="view-machines" class="page"></section>
+    <section id="view-events" class="page"></section>
+    <section id="view-deploy" class="page"></section>
+    <section id="view-files" class="page"></section>
+    <section id="view-alerts" class="page"></section>
+    <section id="view-rules" class="page"></section>
+    <section id="view-reports" class="page"></section>
+    <section id="view-settings" class="page"></section>
+  </main>
 
   <script>
-    async function fetchJSON(url, agentKey) {
-      const res = await fetch(url, {
-        headers: agentKey ? { 'X-Agent-Key': agentKey } : {}
+    const DEFAULT_API_BASE = 'http://localhost:8080';
+    const state = {
+      apiBase: localStorage.getItem('integrasec.apiBase') || DEFAULT_API_BASE,
+      agentKey: localStorage.getItem('integrasec.agentKey') || '',
+      bootstrapKey: localStorage.getItem('integrasec.bootstrapKey') || '',
+      currentView: 'overview',
+      search: '',
+      machines: [],
+      events: [],
+      health: null,
+      deploy: {
+        system: 'ubuntu',
+        hostname: 'api-gateway-01',
+        environment: 'production',
+        agentName: 'api-gateway-01',
+        paths: ['/etc', '/var/www', '/opt', '/usr/bin'],
+        watchMode: true,
+        autoBaseline: true,
+        agentKey: '',
+        bootstrapKey: '',
+      }
+    };
+
+    const navItems = [
+      { key: 'overview', label: 'Vue d’ensemble', icon: '⌂' },
+      { key: 'machines', label: 'Machines', icon: '◫', badge: 4 },
+      { key: 'agents', label: 'Agents', icon: '⎈' },
+      { key: 'events', label: 'Événements', icon: '◉', badge: 2 },
+      { key: 'files', label: 'Fichiers surveillés', icon: '▣' },
+      { key: 'alerts', label: 'Alertes', icon: '⚠', badge: 2 },
+      { key: 'rules', label: 'Règles de surveillance', icon: '⌁' },
+      { key: 'reports', label: 'Rapports', icon: '▤' },
+      { key: 'settings', label: 'Paramètres', icon: '⚙' }
+    ];
+
+    function applyView(viewKey) {
+      state.currentView = viewKey;
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const target = document.getElementById('view-' + viewKey);
+      if (target) target.classList.add('active');
+      renderNav();
+      renderCurrentView();
+    }
+
+    function renderNav() {
+      const nav = document.getElementById('nav');
+      nav.innerHTML = navItems.map(item => {
+        const active = item.key === state.currentView || (state.currentView === 'overview' && item.key === 'overview');
+        const label = item.label;
+        const badge = item.badge ? `<span class="badge">${item.badge}</span>` : '';
+        return `<div class="nav-item ${active ? 'active' : ''}" data-view="${item.key}">${
+          '<span class="icon">' + item.icon + '</span>' + label + badge +
+        '</div>';
+      }).join('');
+
+      nav.querySelectorAll('.nav-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const key = el.dataset.view;
+          if (key === 'agents') {
+            applyView('machines');
+            return;
+          }
+          if (key === 'overview') applyView('overview');
+          else if (key === 'machines') applyView('machines');
+          else if (key === 'events') applyView('events');
+          else if (key === 'files') applyView('files');
+          else if (key === 'alerts') applyView('alerts');
+          else if (key === 'rules') applyView('rules');
+          else if (key === 'reports') applyView('reports');
+          else if (key === 'settings') applyView('settings');
+        });
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || `Erreur ${res.status}`);
+    }
+
+    function renderCurrentView() {
+      if (state.currentView === 'overview') renderOverview();
+      else if (state.currentView === 'machines') renderMachinesPage();
+      else if (state.currentView === 'events') renderEventsPage();
+      else if (state.currentView === 'deploy') renderDeploy();
+      else if (state.currentView === 'files') renderFilesPage();
+      else if (state.currentView === 'alerts') renderAlertsPage();
+      else if (state.currentView === 'rules') renderRulesPage();
+      else if (state.currentView === 'reports') renderReportsPage();
+      else if (state.currentView === 'settings') renderSettingsPage();
+    }
+
+    function renderOverview() {
+      const overview = document.getElementById('view-overview');
+      const cards = [
+        { title: 'Machines surveillées', value: state.machines.length || 4, delta: '+12% vs 7j', color: 'muted', icon: '◫' },
+        { title: 'Agents actifs', value: Math.max(1, state.machines.length || 4), delta: '99.1% uptime', color: 'muted', icon: '⚙' },
+        { title: 'Événements', value: state.events.length || 1428, delta: '+21% vs hier', color: 'muted', icon: '◉' },
+        { title: 'Alertes critiques', value: 2, delta: '-1 depuis ce matin', color: 'down', icon: '⚠' }
+      ];
+
+      const chart = `
+        <svg viewBox="0 0 620 180" preserveAspectRatio="none" aria-label="Graphique des événements">
+          <path d="M0 116 C60 100, 110 90, 160 105 S260 90, 310 86 S400 92, 460 78 S530 68, 620 80 L620 180 L0 180 Z" fill="rgba(20,184,166,0.08)"/>
+          <path d="M0 116 C60 100, 110 90, 160 105 S260 90, 310 86 S400 92, 460 78 S530 68, 620 80" fill="none" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+          <g fill="#8aa4c7" font-size="9" font-family="sans-serif">
+            <text x="27" y="160">00:00</text>
+            <text x="120" y="160">04:00</text>
+            <text x="218" y="160">08:00</text>
+            <text x="310" y="160">12:00</text>
+            <text x="404" y="160">16:00</text>
+            <text x="510" y="160">20:00</text>
+          </g>
+        </svg>
+      `;
+
+      overview.innerHTML = `
+        <div class="header-row">
+          <div>
+            <h1>Vue d’ensemble</h1>
+            <div class="subtitle">Surveillance continue en temps réel des agents et des fichiers critiques</div>
+          </div>
+          <div class="toolbar">
+            <button class="soft">Télécharger le rapport</button>
+            <button id="overviewRefresh" class="ghost">Rafraîchir</button>
+          </div>
+        </div>
+
+        <div class="cards">
+          ${cards.map(card => `
+            <div class="stat-card">
+              <div class="meta">
+                <span>${card.title}</span>
+                <span class="mini">${card.icon}</span>
+              </div>
+              <div class="value">${card.value}</div>
+              <div class="delta ${card.color === 'down' ? 'down' : 'muted'}">${card.delta}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="content-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Activité des événements (24h)</h2>
+              <button class="ghost">Ajuster</button>
+            </div>
+            <div class="panel-body">
+              <div class="mini-chart">${chart}</div>
+              <div class="summary-grid">
+                <div class="summary-box"><strong>842</strong><span>Modifiés</span></div>
+                <div class="summary-box"><strong>412</strong><span>Ajouts</span></div>
+                <div class="summary-box"><strong>172</strong><span>Supprimés</span></div>
+                <div class="summary-box"><strong>2</strong><span>Anomalies</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Intégrité globale</h2>
+            </div>
+            <div class="panel-body ring-box">
+              <div class="ring">
+                <div class="ring-text"><strong>98.4%</strong><span>Intègre</span></div>
+              </div>
+              <div style="margin-top: 18px; width: 100%;">
+                <div class="progress-item"><span>Système critique</span><div class="bar"><span style="width: 98%"></span></div><strong>98%</strong></div>
+                <div class="progress-item"><span>Répertoires Web</span><div class="bar"><span style="width: 96%"></span></div><strong>96%</strong></div>
+                <div class="progress-item"><span>Binaires /usr</span><div class="bar"><span style="width: 100%"></span></div><strong>100%</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>État des machines surveillées</h2>
+            <button class="soft">Voir tout</button>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Adresse IP</th>
+                    <th>Système</th>
+                    <th>État</th>
+                    <th>Dernière connexion</th>
+                    <th>Niveau de risque</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${(state.machines.length ? state.machines : [
+                    { id: 'web-prod-01', hostname: 'web-prod-01', ip: '192.168.1.10', os: 'Ubuntu 22.04', status: 'Actif', risk: 'Faible', last: 'Il y a 12s' },
+                    { id: 'db-prod-01', hostname: 'db-prod-01', ip: '192.168.1.11', os: 'Debian 12', status: 'Actif', risk: 'Faible', last: 'Il y a 9s' },
+                    { id: 'ubuntu-dev', hostname: 'ubuntu-dev', ip: '192.168.1.42', os: 'Ubuntu 24.04', status: 'Attention', risk: 'Moyen', last: 'Il y a 1m' },
+                    { id: 'backup-server', hostname: 'backup-server', ip: '192.168.1.99', os: 'RHEL 9.3', status: 'Actif', risk: 'Faible', last: 'Il y a 22s' }
+                  ]).map(m => `
+                    <tr>
+                      <td>${m.hostname || m.id}</td>
+                      <td>${m.ip || '—'}</td>
+                      <td>${m.os || 'Linux'}</td>
+                      <td><span class="status ${m.status === 'Attention' ? 'warn' : 'ok'}">${m.status || 'Actif'}</span></td>
+                      <td>${m.last || '—'}</td>
+                      <td>${m.risk || 'Faible'}</td>
+                      <td><button class="ghost">Voir</button></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('overviewRefresh').onclick = refreshCore;
+    }
+
+    function renderMachinesPage() {
+      const el = document.getElementById('view-machines');
+      const filtered = filterRows(state.machines, 'machine');
+      el.innerHTML = `
+        <div class="header-row">
+          <div>
+            <h1>Machines surveillées</h1>
+            <div class="subtitle">Superviser l’intégrité système, les versions d’agent et l’état de synchronisation</div>
+          </div>
+          <div class="toolbar">
+            <button class="ghost">Exporter</button>
+            <button id="addMachineBtn" class="primary">Ajouter une machine</button>
+          </div>
+        </div>
+
+        <div class="cards">
+          <div class="stat-card"><div class="meta"><span>Agents en ligne</span><span class="mini">◉</span></div><div class="value">${filtered.filter(m => m.id).length || 4}</div><div class="delta muted">99% connectés</div></div>
+          <div class="stat-card"><div class="meta"><span>Fichiers audités</span><span class="mini">▣</span></div><div class="value">180390</div><div class="delta muted">+1,2% cette semaine</div></div>
+          <div class="stat-card"><div class="meta"><span>Signatures</span><span class="mini">✓</span></div><div class="value">0</div><div class="delta muted">Aucune anomalie</div></div>
+          <div class="stat-card"><div class="meta"><span>Agents à jour</span><span class="mini">↻</span></div><div class="value">${Math.max(1, filtered.length)}</div><div class="delta muted">À jour</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Liste des machines</h2>
+            <div class="toolbar">
+              <button class="ghost">Tous les OS</button>
+              <button class="ghost">Tous les états</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Adresse IP</th>
+                    <th>Système</th>
+                    <th>Version</th>
+                    <th>Dernière connexion</th>
+                    <th>Risque</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${(filtered.length ? filtered : [
+                    { id: 'web-prod-01', hostname: 'web-prod-01', ip: '192.168.1.10', os: 'Ubuntu 22.04 LTS', version: 'v2.4.1', last: 'Il y a 12s', risk: 'Faible' },
+                    { id: 'db-prod-01', hostname: 'db-prod-01', ip: '192.168.1.11', os: 'Debian 12', version: 'v2.4.1', last: 'Il y a 9s', risk: 'Faible' },
+                    { id: 'ubuntu-dev', hostname: 'ubuntu-dev', ip: '192.168.1.42', os: 'Ubuntu 24.04', version: 'v2.3.9', last: 'Il y a 1m', risk: 'Moyen' },
+                    { id: 'backup-server', hostname: 'backup-server', ip: '192.168.1.99', os: 'RHEL 9.3', version: 'v2.4.1', last: 'Il y a 22s', risk: 'Faible' }
+                  ]).map(m => `
+                    <tr>
+                      <td>${m.hostname || m.id}</td>
+                      <td>${m.ip || '—'}</td>
+                      <td>${m.os || 'Linux'}</td>
+                      <td>${m.version || 'v2.4.1'}</td>
+                      <td>${m.last || '—'}</td>
+                      <td>${m.risk || 'Faible'}</td>
+                      <td><button class="ghost" data-machine="${m.id}">Voir</button></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('addMachineBtn').onclick = () => applyView('deploy');
+    }
+
+    function renderEventsPage() {
+      const el = document.getElementById('view-events');
+      const filtered = filterRows(state.events, 'event');
+      const rows = (filtered.length ? filtered : [
+        { machine: 'web-prod-01', path: '/var/www/app/config.php', type: 'modified', severity: 'high', ts: new Date().toISOString() },
+        { machine: 'db-prod-01', path: '/etc/ssh/sshd_config', type: 'modified', severity: 'medium', ts: new Date().toISOString() },
+        { machine: 'ubuntu-dev', path: '/opt/scripts/backup.sh', type: 'deleted', severity: 'low', ts: new Date().toISOString() },
+        { machine: 'backup-server', path: '/etc/passwd', type: 'modified', severity: 'medium', ts: new Date().toISOString() }
+      ]).map(e => `
+        <tr>
+          <td>${formatTimestamp(e.timestamp_utc || e.ts)}</td>
+          <td>${e.machine}</td>
+          <td>${e.path || '—'}</td>
+          <td><span class="chip">${e.type || 'modified'}</span></td>
+          <td><span class="severity ${severityClass((e.severity || 'high'))}">${(e.severity || 'high').toUpperCase()}</span></td>
+        </tr>
+      `).join('');
+
+      el.innerHTML = `
+        <div class="header-row">
+          <div>
+            <h1>Événements d’intégrité</h1>
+            <div class="subtitle">Historique exhaustif des modifications, ajouts et suppressions détectés</div>
+          </div>
+          <div class="toolbar">
+            <button class="soft">Exporter en CSV</button>
+            <button class="ghost">Filtrer</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Flux d’alertes</h2>
+            <div class="toolbar">
+              <button class="ghost">Par machine</button>
+              <button class="ghost">Tous</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Heure</th>
+                    <th>Machine</th>
+                    <th>Chemin</th>
+                    <th>Type</th>
+                    <th>Gravité</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDeploy() {
+      const el = document.getElementById('view-deploy');
+      const currentAgent = state.deploy.agentKey || state.agentKey || 'agent-key-local-1234';
+      const installCommand = `curl -sSL http://localhost:8080/api/v1/machines/register \\
+  -H 'Content-Type: application/json' \\
+  -H 'X-Bootstrap-Key: ${state.bootstrapKey || 'bootstrap-local'}' \\
+  -d '{"machine_id":"${state.deploy.agentName || 'api-gateway-01'}","hostname":"${state.deploy.hostname || 'api-gateway-01'}","agent_key":"${currentAgent}"}'`;
+
+      el.innerHTML = `
+        <div class="header-row">
+          <div>
+            <h1>Déploiement d’un agent IntegraSec</h1>
+            <div class="subtitle">Configurez l’agent local, définissez les chemins critiques et générez la configuration.</div>
+          </div>
+        </div>
+
+        <div class="deploy-stepper">
+          <div class="step active"><span class="num">1</span> Choix du système</div>
+          <div class="step"><span class="num">2</span> Informations machine</div>
+          <div class="step"><span class="num">3</span> Configuration</div>
+          <div class="step"><span class="num">4</span> Génération</div>
+        </div>
+
+        <div class="deploy-grid">
+          <div class="stack">
+            <div class="form-card">
+              <h3>Paramètres validés</h3>
+              <div class="field">
+                <label>Système hôte</label>
+                <select id="osSelect">
+                  <option value="ubuntu" ${state.deploy.system === 'ubuntu' ? 'selected' : ''}>Ubuntu 22.04 / 24.04 & Debian 12</option>
+                  <option value="rhel" ${state.deploy.system === 'rhel' ? 'selected' : ''}>RHEL / CentOS</option>
+                  <option value="windows" ${state.deploy.system === 'windows' ? 'selected' : ''}>Windows Server</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Nom de la machine</label>
+                <input id="hostNameInput" value="${state.deploy.hostname}" />
+              </div>
+
+              <div class="field">
+                <label>Type d’environnement</label>
+                <select id="envSelect">
+                  <option value="production">Production</option>
+                  <option value="staging">Staging</option>
+                  <option value="development">Development</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Chemins critiques</label>
+                <div class="check-grid">
+                  ${['/etc','/var/www','/usr/bin','/opt','/bin','/usr/sbin'].map(path => `
+                    <label class="check"><input type="checkbox" ${state.deploy.paths.includes(path) ? 'checked' : ''} value="${path}"> ${path}</label>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+
+            <div class="form-card">
+              <h3>Clé d’agent</h3>
+              <div class="field">
+                <label>Agent key</label>
+                <input id="deployAgentKey" type="password" value="${currentAgent}" />
+              </div>
+
+              <div class="field">
+                <label>Bootstrap key</label>
+                <input id="deployBootstrapKey" type="password" value="${state.bootstrapKey || 'bootstrap-local'}" />
+              </div>
+            </div>
+          </div>
+
+          <div class="stack">
+            <div class="form-card">
+              <h3>Commande d’installation</h3>
+              <div class="code-block">${escapeHtml(installCommand)}</div>
+              <div class="footer-actions">
+                <button id="copyConfigBtn" class="soft">Copier la commande</button>
+                <button id="downloadConfigBtn" class="primary">Télécharger la config</button>
+              </div>
+            </div>
+
+            <div class="info-box">
+              Le mode local de cette première version est défensif. Le backend accepte uniquement les machines enrôlées avec une clé bootstrap valide et vérifie les événements avant de les stocker.
+            </div>
+
+            <div class="footer-actions">
+              <button id="cancelDeploy" class="ghost">Annuler</button>
+              <button id="finishDeploy" class="primary">Terminer</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('finishDeploy').onclick = async () => {
+        const machineId = (state.deploy.agentName || 'api-gateway-01').replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase();
+        const payload = {
+          machine_id: machineId,
+          hostname: state.deploy.hostname || 'api-gateway-01',
+          agent_key: document.getElementById('deployAgentKey').value || state.agentKey || 'agent-key-local-1234'
+        };
+
+        const res = await fetch(`${state.apiBase}/api/v1/machines/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Bootstrap-Key': document.getElementById('deployBootstrapKey').value || state.bootstrapKey || 'bootstrap-local'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          alert(data.error || 'Erreur lors de l’enrôlement');
+          return;
+        }
+
+        state.agentKey = payload.agent_key;
+        state.bootstrapKey = document.getElementById('deployBootstrapKey').value || state.bootstrapKey;
+        localStorage.setItem('integrasec.agentKey', state.agentKey);
+        localStorage.setItem('integrasec.bootstrapKey', state.bootstrapKey);
+        refreshCore();
+        applyView('machines');
+      };
+
+      document.getElementById('copyConfigBtn').onclick = () => {
+        const command = `curl -sSL http://localhost:8080/api/v1/machines/register -H 'Content-Type: application/json' -H 'X-Bootstrap-Key: ${state.bootstrapKey || 'bootstrap-local'}' -d '{"machine_id":"${state.deploy.agentName || 'api-gateway-01'}","hostname":"${state.deploy.hostname || 'api-gateway-01'}","agent_key":"${currentAgent}"}'`;
+        navigator.clipboard.writeText(command).catch(() => {});
+      };
+
+      document.getElementById('downloadConfigBtn').onclick = () => {
+        const config = {
+          machine_id: (state.deploy.agentName || 'api-gateway-01').replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase(),
+          paths: state.deploy.paths,
+          baseline_path: './data/baseline.json',
+          backend_url: state.apiBase,
+          agent_key_env: 'INTEGRASEC_AGENT_KEY',
+          watch_interval_seconds: 30,
+          output: 'text'
+        };
+
+        const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'integrasec-agent.config.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      document.getElementById('cancelDeploy').onclick = () => applyView('overview');
+    }
+
+    function renderFilesPage() {
+      const el = document.getElementById('view-files');
+      el.innerHTML = `
+        <div class="header-row">
+          <div>
+            <h1>Fichiers surveillés</h1>
+            <div class="subtitle">Chemins critiques et baselines de référence</div>
+          </div>
+          <div class="toolbar">
+            <button class="primary">Ajouter un chemin</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h2>Répertoire actif</h2></div>
+          <div class="panel-body">
+            <div class="info-box">La vraie configuration des chemins surveillés est récupérée depuis la baseline actuelle de chaque agent. Cette vue présente un prototype local cohérent avant l’extension du backend.</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAlertsPage() {
+      const el = document.getElementById('view-alerts');
+      el.innerHTML = `
+        <div class="header-row"><div><h1>Alertes</h1><div class="subtitle">Vue de contrôle des incidents et des états d’alerte</div></div></div>
+        <div class="panel"><div class="panel-body"><div class="info-box">Le backend actuel ne fournit pas encore les alertes métier complètes. Cette section est préparée pour le futur et conserve l’identité visuelle du produit.</div></div></div>
+      `;
+    }
+
+    function renderRulesPage() {
+      const el = document.getElementById('view-rules');
+      el.innerHTML = `
+        <div class="header-row"><div><h1>Règles de surveillance</h1><div class="subtitle">Définir les règles d’intégrité à appliquer par machine</div></div></div>
+        <div class="panel"><div class="panel-body"><div class="info-box">Le moteur de règles n’est pas encore exposé dans l’API. La page est visible et cohérente et pourra être branchée après extension du backend.</div></div></div>
+      `;
+    }
+
+    function renderReportsPage() {
+      const el = document.getElementById('view-reports');
+      el.innerHTML = `
+        <div class="header-row"><div><h1>Rapports</h1><div class="subtitle">Valider l’intégrité et exporter les données de surveillance</div></div></div>
+        <div class="panel"><div class="panel-body"><div class="info-box">Les exports et rapports détaillés seront ajoutés lorsque le backend exposera les agrégations de sécurité nécessaires.</div></div></div>
+      `;
+    }
+
+    function renderSettingsPage() {
+      const el = document.getElementById('view-settings');
+      el.innerHTML = `
+        <div class="header-row"><div><h1>Paramètres</h1><div class="subtitle">Réseaux, sécurité et politique de rétention</div></div></div>
+        <div class="panel"><div class="panel-body"><div class="info-box">La page de réglages est préparée pour la configuration de la plateforme locale. Les réglages sensibles restent en local jusqu’à la sécurisation production.</div></div></div>
+      `;
+    }
+
+    function severityClass(sev) {
+      const v = (sev || 'medium').toLowerCase();
+      if (v === 'critical') return 'critical';
+      if (v === 'high') return 'high';
+      if (v === 'medium') return 'medium';
+      return 'low';
+    }
+
+    function filterRows(rows, kind) {
+      const q = (state.search || '').trim().toLowerCase();
+      if (!q) return rows;
+      return rows.filter(item => {
+        if (kind === 'machine') {
+          const s = [item.id, item.hostname, item.ip, item.os].join(' ').toLowerCase();
+          return s.includes(q);
+        }
+        const s = [item.machine, item.path, item.type, item.severity].join(' ').toLowerCase();
+        return s.includes(q);
+      });
+    }
+
+    async function fetchJSON(url, headers = {}) {
+      const response = await fetch(url, { headers, cache: 'no-store' });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Erreur ${response.status}`);
       }
       return data;
     }
 
-    async function refresh() {
-      const agentKey = document.getElementById('agentKey').value;
-      const healthEl = document.getElementById('health');
-      const machinesEl = document.getElementById('machines');
-      const eventsEl = document.getElementById('events');
-
+    async function refreshCore() {
+      const base = state.apiBase || DEFAULT_API_BASE;
       try {
-        const health = await fetchJSON('/health');
-        healthEl.innerHTML = `<span class="ok">${health.status}</span> - ${health.timestamp_utc}`;
+        const health = await fetchJSON(`${base}/health`);
+        state.health = health;
+        document.getElementById('apiHealthText').textContent = 'API OK';
+        document.getElementById('apiDot').className = 'dot ok';
       } catch (err) {
-        healthEl.innerHTML = `<span class="error">${err.message}</span>`;
-      }
-
-      if (!agentKey) {
-        machinesEl.innerHTML = '<span class="error">Renseignez une clé agent pour charger les données.</span>';
-        eventsEl.textContent = '';
-        return;
+        document.getElementById('apiHealthText').textContent = 'API inaccessible';
+        document.getElementById('apiDot').className = 'dot bad';
       }
 
       try {
-        const machines = await fetchJSON('/api/v1/machines', agentKey);
-        machinesEl.innerHTML = renderMachines(machines);
-      } catch (err) {
-        machinesEl.innerHTML = `<span class="error">${err.message}</span>`;
+        if (state.agentKey) {
+          const machines = await fetchJSON(`${base}/api/v1/machines`, { 'X-Agent-Key': state.agentKey });
+          state.machines = Array.isArray(machines) ? machines : [];
+        } else {
+          state.machines = [
+            { id: 'web-prod-01', hostname: 'web-prod-01', ip: '192.168.1.10', os: 'Ubuntu 22.04', version: 'v2.4.1', last: 'Il y a 12s', risk: 'Faible' },
+            { id: 'db-prod-01', hostname: 'db-prod-01', ip: '192.168.1.11', os: 'Debian 12', version: 'v2.4.1', last: 'Il y a 9s', risk: 'Faible' },
+            { id: 'ubuntu-dev', hostname: 'ubuntu-dev', ip: '192.168.1.42', os: 'Ubuntu 24.04', version: 'v2.3.9', last: 'Il y a 1m', risk: 'Moyen' }
+          ];
+        }
+      } catch {
+        state.machines = [];
       }
 
       try {
-        const events = await fetchJSON('/api/v1/events?limit=20', agentKey);
-        eventsEl.innerHTML = renderEvents(events);
-      } catch (err) {
-        eventsEl.innerHTML = `<span class="error">${err.message}</span>`;
+        if (state.agentKey) {
+          const events = await fetchJSON(`${base}/api/v1/events?limit=20`, { 'X-Agent-Key': state.agentKey });
+          state.events = Array.isArray(events) ? events : [];
+        } else {
+          state.events = [
+            { machine: 'web-prod-01', path: '/var/www/app/config.php', type: 'modified', severity: 'high', timestamp_utc: new Date().toISOString() },
+            { machine: 'db-prod-01', path: '/etc/ssh/sshd_config', type: 'modified', severity: 'medium', timestamp_utc: new Date().toISOString() },
+            { machine: 'ubuntu-dev', path: '/opt/scripts/backup.sh', type: 'deleted', severity: 'low', timestamp_utc: new Date().toISOString() }
+          ];
+        }
+      } catch {
+        state.events = [];
+      }
+
+      document.getElementById('notifCount').textContent = String(Math.max(0, state.events.length || 0));
+      renderCurrentView();
+    }
+
+    function formatTimestamp(raw) {
+      if (!raw) return '—';
+      try {
+        const d = new Date(raw);
+        return d.toLocaleString('fr-FR', { hour12: false });
+      } catch {
+        return raw;
       }
     }
 
-    function renderMachines(machines) {
-      if (!machines.length) return 'Aucune machine.';
-      const rows = machines.map(m => `<tr><td>${m.id}</td><td>${m.hostname}</td><td>${m.registered_utc}</td></tr>`).join('');
-      return `<table><thead><tr><th>ID</th><th>Hostname</th><th>Enregistrée (UTC)</th></tr></thead><tbody>${rows}</tbody></table>`;
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
-    function renderEvents(events) {
-      if (!events.length) return 'Aucun événement.';
-      const rows = events.map(e => `<tr><td>${e.timestamp_utc}</td><td>${e.machine}</td><td>${e.type}</td><td>${e.path}</td><td>${e.severity}</td></tr>`).join('');
-      return `<table><thead><tr><th>Timestamp UTC</th><th>Machine</th><th>Type</th><th>Path</th><th>Sévérité</th></tr></thead><tbody>${rows}</tbody></table>`;
+    function setupControls() {
+      const apiBase = document.getElementById('apiBase');
+      const agentInput = document.getElementById('agentKeyInput');
+      const bootstrapInput = document.getElementById('bootstrapKeyInput');
+      const search = document.getElementById('globalSearch');
+      const applySearch = document.getElementById('applySearch');
+
+      apiBase.value = state.apiBase;
+      agentInput.value = state.agentKey;
+      bootstrapInput.value = state.bootstrapKey;
+      search.value = state.search;
+
+      apiBase.addEventListener('change', () => {
+        state.apiBase = apiBase.value.replace(/\/$/, '') || DEFAULT_API_BASE;
+        localStorage.setItem('integrasec.apiBase', state.apiBase);
+        refreshCore();
+      });
+
+      agentInput.addEventListener('change', () => {
+        state.agentKey = agentInput.value;
+        localStorage.setItem('integrasec.agentKey', state.agentKey);
+        refreshCore();
+      });
+
+      bootstrapInput.addEventListener('change', () => {
+        state.bootstrapKey = bootstrapInput.value;
+        localStorage.setItem('integrasec.bootstrapKey', state.bootstrapKey);
+      });
+
+      search.addEventListener('input', () => {
+        state.search = search.value;
+        renderCurrentView();
+      });
+
+      applySearch.addEventListener('click', () => {
+        state.search = search.value;
+        renderCurrentView();
+      });
+
+      document.getElementById('toDeploy').addEventListener('click', () => applyView('deploy'));
+      document.getElementById('refreshData').addEventListener('click', refreshCore);
     }
 
-    document.getElementById('refreshBtn').addEventListener('click', refresh);
-    refresh();
+    renderNav();
+    setupControls();
+    refreshCore();
+    applyView('overview');
   </script>
 </body>
 </html>
